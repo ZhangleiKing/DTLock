@@ -24,4 +24,8 @@ public class DistributedLock implements Lock{
     public void unLock() {
         lock.unLock();
     }
+
+    public String lockInfo() {
+        return null;
+    }
 }

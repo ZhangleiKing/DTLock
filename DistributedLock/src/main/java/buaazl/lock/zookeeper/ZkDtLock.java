@@ -34,7 +34,7 @@ public class ZkDtLock implements Lock{
     private volatile boolean isLocked;
 
     //The id of lock which is being required now(has not gotten, requiring...)
-    private String currrentLockId;
+    private String currentLockId;
 
     private String currentLockedNodePath;
 
@@ -51,7 +51,7 @@ public class ZkDtLock implements Lock{
     private void init() throws IOException, InterruptedException, KeeperException {
         ZkUtil.ensurePathExist(zkConnection, aclList, lockPath);
         currentLockedNodePath = zkConnection.getZooKeeper().create(lockPath + ZkConstant.ZL_LOCK_MARKUP, null, aclList, CreateMode.EPHEMERAL_SEQUENTIAL);
-        currrentLockId = currentLockedNodePath.substring(currentLockedNodePath.lastIndexOf("/") + 1);
+        currentLockId = currentLockedNodePath.substring(currentLockedNodePath.lastIndexOf("/") + 1);
         this.watcher = new LockWatcher();
     }
 
@@ -59,7 +59,25 @@ public class ZkDtLock implements Lock{
         if(isLocked) {
             throw new ZkLockException("Have gotten lock, please release lock first...");
         }
-        
+
+        try {
+            init();
+            watcher.canLockForCurrentId();
+            if(!isLocked) {
+                //This lock requirement failed
+                throw new ZkLockException("Get lock failed...");
+            }
+        } catch (InterruptedException e) {
+            abandonAttemptGetLock();
+            throw new ZkLockException("InterruptedException: " + e.getMessage());
+        } catch (KeeperException e) {
+            abandonAttemptGetLock();
+            throw new ZkLockException("KeeperException: " + e.getMessage());
+        } catch (IOException e) {
+            abandonAttemptGetLock();
+            throw new ZkLockException("IOException: " + e.getMessage());
+        }
+
     }
 
     public boolean tryLock() {
@@ -71,7 +89,15 @@ public class ZkDtLock implements Lock{
     }
 
     public void unLock() {
+        if(currentLockId == null) {
+            throw new ZkLockException("Have not gotten lock, please get lock first...");
+        }
+        if(isLocked)
+            cleanUp();
+    }
 
+    public String lockInfo() {
+        return null;
     }
 
     private void abandonAttemptGetLock() {
@@ -93,7 +119,7 @@ public class ZkDtLock implements Lock{
             throw new ZkLockException(e);
         }
         isLocked = false;
-        currrentLockId = null;
+        currentLockId = null;
         currentLockedNodePath = null;
         logger.info("Lock clean up finished !");
     }
@@ -103,7 +129,7 @@ public class ZkDtLock implements Lock{
     }
 
     public String getLockInfo() {
-        return "LockPath = " + this.lockPath + ", isLocked = " + this.isLocked + ", currentLockId = " + this.currrentLockId;
+        return "LockPath = " + this.lockPath + ", isLocked = " + this.isLocked + ", currentLockId = " + this.currentLockId;
     }
 
 
@@ -119,7 +145,7 @@ public class ZkDtLock implements Lock{
         }
 
         private synchronized void canLockForCurrentId() {
-            if(currrentLockId == null || currrentLockId.length() == 0) {
+            if(currentLockId == null || currentLockId.length() == 0) {
                 throw new ZkLockException("Require lock exception,can not get lock id...");
             }
 
@@ -127,7 +153,7 @@ public class ZkDtLock implements Lock{
                 //"null" means not setting watch
                 List<String> waitLockIds = zkConnection.getZooKeeper().getChildren(lockPath, null);
                 Collections.sort(waitLockIds);
-                int currentLockIdIndex = waitLockIds.indexOf(currrentLockId);
+                int currentLockIdIndex = waitLockIds.indexOf(currentLockId);
                 /**
                  * If current lock id is the first, then can get lock
                  * else, check the ahead znode exist or not; If not exist, means the ahead node has given up the lock

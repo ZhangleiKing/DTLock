@@ -24,4 +24,6 @@ public interface Lock {
      * release lock
      */
     public void unLock();
+
+    public String lockInfo();
 }

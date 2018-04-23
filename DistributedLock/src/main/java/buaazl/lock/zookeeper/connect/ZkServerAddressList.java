@@ -42,6 +42,15 @@ public class ZkServerAddressList {
         }
     }
 
+    public String toString() {
+        StringBuffer sb = new StringBuffer();
+        for(ZkServerAddress address : zkServerAddressList) {
+            sb.append(address.host).append(ZkConstant.COLON).append(address.port).append(ZkConstant.COMMA);
+        }
+        //Remove the last comma
+        return sb.toString().substring(0, sb.toString().length()-1);
+    }
+
     private class ZkServerAddress {
         public String host;
         public int port;

@@ -21,4 +21,8 @@ public class RedisDtLock implements Lock {
     public void unLock() {
 
     }
+
+    public String lockInfo() {
+        return null;
+    }
 }
