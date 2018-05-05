@@ -13,5 +13,8 @@ public class ZkConstant {
 
     public static final String ZL_LOCK_MARKUP = "/buaazl.lock_";
 
-    public static final int ZK_ZNODE_DATA_VERSION = 1;
+    /**
+     * represent all version of znode data
+     */
+    public static final int ZK_ZNODE_DATA_ALLVERSION = -1;
 }

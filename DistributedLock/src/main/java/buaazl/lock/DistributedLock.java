@@ -25,7 +25,11 @@ public class DistributedLock implements Lock{
         lock.unLock();
     }
 
+    public boolean getLocked() {
+        return false;
+    }
+
     public String lockInfo() {
-        return null;
+        return lock.lockInfo();
     }
 }

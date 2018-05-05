@@ -29,5 +29,8 @@ public class ZkDtLockTest {
         Lock dtLock = new ZkDtLock(ZkConnectionBuilderTest.getZkConnection(), "/dtLock");
         dtLock.lock();
         logger.info("dtLock info: " + dtLock.lockInfo());
+        assert dtLock.getLocked() == true;
+        dtLock.unLock();
+        assert dtLock.getLocked() == false;
     }
 }

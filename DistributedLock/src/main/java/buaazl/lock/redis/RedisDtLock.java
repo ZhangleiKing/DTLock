@@ -22,6 +22,10 @@ public class RedisDtLock implements Lock {
 
     }
 
+    public boolean getLocked() {
+        return false;
+    }
+
     public String lockInfo() {
         return null;
     }

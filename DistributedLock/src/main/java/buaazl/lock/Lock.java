@@ -11,19 +11,25 @@ public interface Lock {
      * try to get lock, if can, then get lock; otherwise, return immediately
      * @return
      */
-    public boolean tryLock();
+    boolean tryLock();
 
     /**
      * try to get lock, if can, then get lock; otherwise, it will wait millisTimeout before return.
      * @param millisTimeout
      * @return
      */
-    public boolean tryLock(long millisTimeout);
+    boolean tryLock(long millisTimeout);
 
     /**
      * release lock
      */
-    public void unLock();
+    void unLock();
 
-    public String lockInfo();
+    /**
+     * if got lock, return true
+     * @return
+     */
+    boolean getLocked();
+
+    String lockInfo();
 }
