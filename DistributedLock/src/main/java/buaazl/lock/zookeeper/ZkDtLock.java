@@ -83,7 +83,7 @@ public class ZkDtLock extends DistributedLock{
     }
 
     public boolean tryLock() {
-
+        tryLock(0L);
         return false;
     }
 
@@ -97,6 +97,10 @@ public class ZkDtLock extends DistributedLock{
             if(!isLocked) {
                 //if not get lock, then wait a period of time and try to obtain again
                 Thread.sleep(millisTimeout);
+                watcher.canLockForCurrentId();
+            }
+            if(!isLocked) {
+                return false;
             }
         } catch (InterruptedException e) {
             e.printStackTrace();
@@ -105,7 +109,7 @@ public class ZkDtLock extends DistributedLock{
         } catch (IOException e) {
             e.printStackTrace();
         }
-        return false;
+        return true;
     }
 
     public void unLock() {
